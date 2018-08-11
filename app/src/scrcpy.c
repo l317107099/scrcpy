@@ -56,6 +56,11 @@ static int event_watcher(void *data, SDL_Event *event) {
 }
 #endif
 
+static int is_apk(const char *file) {
+    const char *ext = strrchr(file, '.');
+    return ext && !strcmp(ext, ".apk");
+}
+
 static void event_loop(void) {
 #ifdef CONTINUOUS_RESIZING_WORKAROUND
     SDL_AddEventWatch(event_watcher, NULL);
@@ -105,7 +110,12 @@ static void event_loop(void) {
                 input_manager_process_mouse_button(&input_manager, &event.button);
                 break;
             case SDL_DROPFILE:
-                installer_install_apk(&installer, event.drop.file);
+                if (is_apk(event.drop.file)) {
+                    installer_install_apk(&installer, event.drop.file);
+                } else {
+                    process_t process = adb_push(server.serial, event.drop.file, DEVICE_SDCARD_PATH);
+                    process_check_success(process, "adb push");
+                }
                 break;
         }
     }

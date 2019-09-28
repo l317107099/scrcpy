@@ -32,6 +32,7 @@ struct args {
     bool always_on_top;
     bool turn_screen_off;
     bool render_expired_frames;
+    bool lock_screen_when_closing;
 };
 
 static void usage(const char *arg0) {
@@ -117,6 +118,9 @@ static void usage(const char *arg0) {
         "\n"
         "    --window-title text\n"
         "        Set a custom window title.\n"
+        "\n"
+        "    --lock-screen-when-closing\n"
+        "        Lock device screen when closing scrcpy.\n"
         "\n"
         "Shortcuts:\n"
         "\n"
@@ -309,34 +313,37 @@ guess_record_format(const char *filename) {
     return 0;
 }
 
-#define OPT_RENDER_EXPIRED_FRAMES 1000
-#define OPT_WINDOW_TITLE          1001
-#define OPT_PUSH_TARGET           1002
+#define OPT_RENDER_EXPIRED_FRAMES    1000
+#define OPT_WINDOW_TITLE             1001
+#define OPT_PUSH_TARGET              1002
+#define OPT_LOCK_SCREEN_WHEN_CLOSING 1003
 
 static bool
 parse_args(struct args *args, int argc, char *argv[]) {
     static const struct option long_options[] = {
-        {"always-on-top",         no_argument,       NULL, 'T'},
-        {"bit-rate",              required_argument, NULL, 'b'},
-        {"crop",                  required_argument, NULL, 'c'},
-        {"fullscreen",            no_argument,       NULL, 'f'},
-        {"help",                  no_argument,       NULL, 'h'},
-        {"max-size",              required_argument, NULL, 'm'},
-        {"no-control",            no_argument,       NULL, 'n'},
-        {"no-display",            no_argument,       NULL, 'N'},
-        {"port",                  required_argument, NULL, 'p'},
-        {"push-target",           required_argument, NULL,
+        {"always-on-top",            no_argument,       NULL, 'T'},
+        {"bit-rate",                 required_argument, NULL, 'b'},
+        {"crop",                     required_argument, NULL, 'c'},
+        {"fullscreen",               no_argument,       NULL, 'f'},
+        {"help",                     no_argument,       NULL, 'h'},
+        {"max-size",                 required_argument, NULL, 'm'},
+        {"no-control",               no_argument,       NULL, 'n'},
+        {"no-display",               no_argument,       NULL, 'N'},
+        {"port",                     required_argument, NULL, 'p'},
+        {"push-target",              required_argument, NULL,
                                                  OPT_PUSH_TARGET},
-        {"record",                required_argument, NULL, 'r'},
-        {"record-format",         required_argument, NULL, 'F'},
-        {"render-expired-frames", no_argument,       NULL,
+        {"record",                   required_argument, NULL, 'r'},
+        {"record-format",            required_argument, NULL, 'F'},
+        {"render-expired-frames",    no_argument,       NULL,
                                                  OPT_RENDER_EXPIRED_FRAMES},
-        {"serial",                required_argument, NULL, 's'},
-        {"show-touches",          no_argument,       NULL, 't'},
-        {"turn-screen-off",       no_argument,       NULL, 'S'},
-        {"version",               no_argument,       NULL, 'v'},
-        {"window-title",          required_argument, NULL,
+        {"serial",                   required_argument, NULL, 's'},
+        {"show-touches",             no_argument,       NULL, 't'},
+        {"turn-screen-off",          no_argument,       NULL, 'S'},
+        {"version",                  no_argument,       NULL, 'v'},
+        {"window-title",             required_argument, NULL,
                                                  OPT_WINDOW_TITLE},
+        {"lock-screen-when-closing", no_argument,       NULL,
+                                                 OPT_LOCK_SCREEN_WHEN_CLOSING},
         {NULL,                    0,                 NULL, 0  },
     };
     int c;
@@ -404,6 +411,9 @@ parse_args(struct args *args, int argc, char *argv[]) {
                 break;
             case OPT_PUSH_TARGET:
                 args->push_target = optarg;
+                break;
+            case OPT_LOCK_SCREEN_WHEN_CLOSING:
+                args->lock_screen_when_closing = true;
                 break;
             default:
                 // getopt prints the error message on stderr
@@ -475,6 +485,7 @@ main(int argc, char *argv[]) {
         .no_display = false,
         .turn_screen_off = false,
         .render_expired_frames = false,
+        .lock_screen_when_closing = false,
     };
     if (!parse_args(&args, argc, argv)) {
         return 1;
@@ -521,6 +532,7 @@ main(int argc, char *argv[]) {
         .display = !args.no_display,
         .turn_screen_off = args.turn_screen_off,
         .render_expired_frames = args.render_expired_frames,
+        .lock_screen_when_closing = args.lock_screen_when_closing,
     };
     int res = scrcpy(&options) ? 0 : 1;
 

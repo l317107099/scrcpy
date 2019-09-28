@@ -25,6 +25,7 @@ enum control_msg_type {
     CONTROL_MSG_TYPE_GET_CLIPBOARD,
     CONTROL_MSG_TYPE_SET_CLIPBOARD,
     CONTROL_MSG_TYPE_SET_SCREEN_POWER_MODE,
+    CONTROL_MSG_TYPE_LOCK_SCREEN,
 };
 
 enum screen_power_mode {

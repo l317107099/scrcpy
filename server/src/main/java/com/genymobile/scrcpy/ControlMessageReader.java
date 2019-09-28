@@ -75,6 +75,7 @@ public class ControlMessageReader {
             case ControlMessage.TYPE_EXPAND_NOTIFICATION_PANEL:
             case ControlMessage.TYPE_COLLAPSE_NOTIFICATION_PANEL:
             case ControlMessage.TYPE_GET_CLIPBOARD:
+            case ControlMessage.TYPE_LOCK_SCREEN:
                 msg = ControlMessage.createEmpty(type);
                 break;
             default:

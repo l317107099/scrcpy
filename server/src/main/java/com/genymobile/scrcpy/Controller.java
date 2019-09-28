@@ -96,6 +96,9 @@ public class Controller {
             case ControlMessage.TYPE_BACK_OR_SCREEN_ON:
                 pressBackOrTurnScreenOn();
                 break;
+            case ControlMessage.TYPE_LOCK_SCREEN:
+                lockScreen();
+                break;
             case ControlMessage.TYPE_EXPAND_NOTIFICATION_PANEL:
                 device.expandNotificationPanel();
                 break;
@@ -196,6 +199,14 @@ public class Controller {
 
     private boolean pressBackOrTurnScreenOn() {
         int keycode = device.isScreenOn() ? KeyEvent.KEYCODE_BACK : KeyEvent.KEYCODE_POWER;
+        return injectKeycode(keycode);
+    }
+
+    private boolean lockScreen() {
+        if (!device.isScreenOn()) {
+            return true;
+        }
+        int keycode = KeyEvent.KEYCODE_POWER;
         return injectKeycode(keycode);
     }
 }

@@ -234,6 +234,16 @@ wait_show_touches(process_t process) {
     process_check_success(process, "show_touches");
 }
 
+static void
+lock_screen(struct controller *controller) {
+    struct control_msg msg;
+    msg.type = CONTROL_MSG_TYPE_LOCK_SCREEN;
+
+    if (!controller_push_msg(controller, &msg)) {
+        LOGW("Could not request 'turn screen off'");
+    }
+}
+
 static SDL_LogPriority
 sdl_priority_from_av_level(int level) {
     switch (level) {
@@ -410,6 +420,10 @@ scrcpy(const struct scrcpy_options *options) {
 
     ret = event_loop(options->display, options->control);
     LOGD("quit...");
+
+    if (options->lock_screen_when_closing) {
+        lock_screen(&controller);
+    }
 
     screen_destroy(&screen);
 

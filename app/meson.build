@@ -40,9 +40,9 @@ else
     cc = meson.get_compiler('c')
 
     prebuilt_sdl2 = meson.get_cross_property('prebuilt_sdl2')
-    sdl2_bin_dir = meson.current_source_dir() + '/../prebuilt-deps/' + prebuilt_sdl2 + '/bin'
-    sdl2_lib_dir = meson.current_source_dir() + '/../prebuilt-deps/' + prebuilt_sdl2 + '/lib'
-    sdl2_include_dir = '../prebuilt-deps/' + prebuilt_sdl2 + '/include'
+    sdl2_bin_dir = meson.current_source_dir() + '/../prebuilt-deps/mxe/usr/x86_64-w64-mingw32.shared/bin'
+    sdl2_lib_dir = meson.current_source_dir() + '/../prebuilt-deps/mxe/usr/x86_64-w64-mingw32.shared/bin'
+    sdl2_include_dir = '../prebuilt-deps/mxe/usr/x86_64-w64-mingw32.shared/include'
 
     sdl2 = declare_dependency(
         dependencies: [
@@ -54,8 +54,8 @@ else
 
     prebuilt_ffmpeg_shared = meson.get_cross_property('prebuilt_ffmpeg_shared')
     prebuilt_ffmpeg_dev = meson.get_cross_property('prebuilt_ffmpeg_dev')
-    ffmpeg_bin_dir = meson.current_source_dir() + '/../prebuilt-deps/' + prebuilt_ffmpeg_shared + '/bin'
-    ffmpeg_include_dir = '../prebuilt-deps/' + prebuilt_ffmpeg_dev + '/include'
+    ffmpeg_bin_dir = meson.current_source_dir() + '/../prebuilt-deps/mxe/usr/x86_64-w64-mingw32.shared/bin'
+    ffmpeg_include_dir = '../prebuilt-deps/mxe/usr/x86_64-w64-mingw32.shared/include'
     ffmpeg = declare_dependency(
         dependencies: [
             cc.find_library('avcodec-58', dirs: ffmpeg_bin_dir),

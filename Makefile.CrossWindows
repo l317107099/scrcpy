@@ -33,7 +33,9 @@ VERSION := $(shell git describe --tags --always)
 WIN32_TARGET := $(WIN32_TARGET_DIR)-$(VERSION).zip
 WIN64_TARGET := $(WIN64_TARGET_DIR)-$(VERSION).zip
 
-release: clean zip-win32 zip-win64 sums
+CURR_PATH := $(shell pwd)
+
+release: clean zip-win64 sums
 	@echo "Windows archives generated in $(DIST)/"
 
 clean:
@@ -72,28 +74,41 @@ build-win32-noconsole: prepare-deps-win32
 	ninja -C "$(WIN32_NOCONSOLE_BUILD_DIR)"
 
 prepare-deps-win64:
-	-$(MAKE) -C prebuilt-deps prepare-win64
+	[ -d "prebuilt-deps/mxe" ] || git clone git@github.com:mxe/mxe.git prebuilt-deps/mxe
+	$(MAKE) -C prebuilt-deps/mxe MXE_TARGETS=x86_64-w64-mingw32.shared sdl2 -j 4 JOBS=2
+	$(MAKE) -C prebuilt-deps/mxe MXE_TARGETS=x86_64-w64-mingw32.shared ffmpeg -j 4 JOBS=2
+	$(MAKE) -C prebuilt-deps prepare-adb
 
 build-win64: prepare-deps-win64
+	# dirty way, but meson doesn't support relative path in cross file now.
+	# See https://github.com/mesonbuild/meson/issues/3439
+	cp cross_win64.txt cross_win64.txt.tmp
+	sed -i 's#@PWD@#$(CURR_PATH)#g' cross_win64.txt.tmp
 	[ -d "$(WIN64_BUILD_DIR)" ] || ( mkdir "$(WIN64_BUILD_DIR)" && \
 		meson "$(WIN64_BUILD_DIR)" \
-			--cross-file cross_win64.txt \
+			--cross-file cross_win64.txt.tmp \
 			--buildtype release --strip -Db_lto=true \
 			-Dcrossbuild_windows=true \
 			-Dcompile_server=false \
 			-Dportable=true )
 	ninja -C "$(WIN64_BUILD_DIR)"
+	rm cross_win64.txt.tmp
 
 build-win64-noconsole: prepare-deps-win64
+	# dirty way, but meson doesn't support relative path in cross file now.
+	# See https://github.com/mesonbuild/meson/issues/3439
+	cp cross_win64.txt cross_win64.txt.tmp
+	sed -i 's#@PWD@#$(CURR_PATH)#g' cross_win64.txt.tmp
 	[ -d "$(WIN64_NOCONSOLE_BUILD_DIR)" ] || ( mkdir "$(WIN64_NOCONSOLE_BUILD_DIR)" && \
 		meson "$(WIN64_NOCONSOLE_BUILD_DIR)" \
-			--cross-file cross_win64.txt \
+			--cross-file cross_win64.txt.tmp \
 			--buildtype release --strip -Db_lto=true \
 			-Dcrossbuild_windows=true \
 			-Dcompile_server=false \
 			-Dwindows_noconsole=true \
 			-Dportable=true )
 	ninja -C "$(WIN64_NOCONSOLE_BUILD_DIR)"
+	rm cross_win64.txt.tmp
 
 dist-win32: build-server build-win32 build-win32-noconsole
 	mkdir -p "$(DIST)/$(WIN32_TARGET_DIR)"
@@ -115,15 +130,14 @@ dist-win64: build-server build-win64 build-win64-noconsole
 	cp "$(SERVER_BUILD_DIR)"/server/scrcpy-server "$(DIST)/$(WIN64_TARGET_DIR)/"
 	cp "$(WIN64_BUILD_DIR)"/app/scrcpy.exe "$(DIST)/$(WIN64_TARGET_DIR)/"
 	cp "$(WIN64_NOCONSOLE_BUILD_DIR)"/app/scrcpy.exe "$(DIST)/$(WIN64_TARGET_DIR)/scrcpy-noconsole.exe"
-	cp prebuilt-deps/ffmpeg-4.3.1-win64-shared/bin/avutil-56.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
-	cp prebuilt-deps/ffmpeg-4.3.1-win64-shared/bin/avcodec-58.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
-	cp prebuilt-deps/ffmpeg-4.3.1-win64-shared/bin/avformat-58.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
-	cp prebuilt-deps/ffmpeg-4.3.1-win64-shared/bin/swresample-3.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
-	cp prebuilt-deps/ffmpeg-4.3.1-win64-shared/bin/swscale-5.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
 	cp prebuilt-deps/platform-tools/adb.exe "$(DIST)/$(WIN64_TARGET_DIR)/"
 	cp prebuilt-deps/platform-tools/AdbWinApi.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
 	cp prebuilt-deps/platform-tools/AdbWinUsbApi.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
-	cp prebuilt-deps/SDL2-2.0.12/x86_64-w64-mingw32/bin/SDL2.dll "$(DIST)/$(WIN64_TARGET_DIR)/"
+	prebuilt-deps/mxe/tools/copydlldeps.sh --infile "$(DIST)/$(WIN64_TARGET_DIR)/scrcpy.exe" \
+			--destdir "$(DIST)/$(WIN64_TARGET_DIR)/" \
+			--recursivesrcdir prebuilt-deps/mxe/usr/x86_64-w64-mingw32.shared \
+			--copy \
+			--objdump prebuilt-deps/mxe/usr/bin/x86_64-w64-mingw32.shared-objdump
 
 zip-win32: dist-win32
 	cd "$(DIST)/$(WIN32_TARGET_DIR)"; \

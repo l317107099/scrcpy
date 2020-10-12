@@ -2,11 +2,11 @@
 
 [binaries]
 name = 'mingw'
-c = '/usr/bin/x86_64-w64-mingw32-gcc'
-cpp = '/usr/bin/x86_64-w64-mingw32-g++'
-ar = '/usr/bin/x86_64-w64-mingw32-ar'
-strip = '/usr/bin/x86_64-w64-mingw32-strip'
-pkgconfig = '/usr/bin/x86_64-w64-mingw32-pkg-config'
+c = '@PWD@/prebuilt-deps/mxe/usr/bin/x86_64-w64-mingw32.shared-gcc'
+cpp = '@PWD@/prebuilt-deps/mxe/usr/bin/x86_64-w64-mingw32.shared-g++'
+ar = '@PWD@/prebuilt-deps/mxe/usr/bin/x86_64-w64-mingw32.shared-ar'
+strip = '@PWD@/prebuilt-deps/mxe/usr/bin/x86_64-w64-mingw32.shared-strip'
+pkgconfig = '@PWD@/prebuilt-deps/mxe/usr/bin/x86_64-w64-mingw32.shared-pkg-config'
 
 [host_machine]
 system = 'windows'
